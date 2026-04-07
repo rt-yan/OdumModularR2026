@@ -42,7 +42,8 @@ pairs = pairs |>
     airport2 = if_else(Origin < Dest, Dest, Origin)
   ) |>
   group_by(airport1, airport2) |>
-  summarize(Passengers = sum(Passengers), distance_km = first(distance_km))
+  summarize(Passengers = sum(Passengers), distance_km = first(distance_km)) |>
+  ungroup()
 
 arrange(pairs, -Passengers)
 
@@ -66,6 +67,7 @@ pairs = data |>
   summarize(
     Passengers = sum(Passengers),
     distance_km = first(distance_km) * 1.609
-  )
+  ) |>
+  ungroup()
 
 arrange(pairs, -Passengers)
