@@ -3,11 +3,58 @@
 # basic information about air flows in the US.
 
 # This data is extracted from the Bureau of Transportation Statistics DB1B dataset
+devtools::document()
+devtools::check()
+devtools::install()
 
 library(tidyverse)
 
+# these are for developing r pacakge
+library(devtools)
+library(roxygen2)
+library(testthat)
+
+
+devtools::load_all() # this is to load self-defined packages
+
+install.packages(c("pkgload"))
+# Restart the R session now (manually). After restart:
+packageVersion("pkgload")   # confirm >= "1.4.0"
+devtools::document()
+
+packageVersion("pkgload")   # should be >= "1.4.0"
+packageVersion("rlang")     # should be >= "1.1.5"
+devtools::document()        # run from console
+
+devtools::load_all()
+
+MILES_TO_KILOMETERS <- 1.609
+
+DATA_PATH = Sys.getenv("DATA_PATH") # need to restart to get it to work
+
+
+data = load_data(
+  datafile = file.path(DATA_PATH, "air_sample.csv"),
+  cityfile = file.path(DATA_PATH, "L_CITY_MARKET_ID.csv"),
+  carrierfile = file.path(DATA_PATH, "L_CARRIERS.csv")
+)
+
+
+
+library(OdumModularDesignR)
+# DATA_PATH = Sys.getenv("DATA_PATH")
+# data = load_data(
+#     file.path("air_sample.csv"),
+#     file.path("L_CITY_MARKET_ID.csv"),
+#     file.path("L_CARRIERS.csv")
+# )
+busiest_routes(data, Origin, Dest)
+busiest_routes(data, OriginCity, DestCity)
+
+
 # first, we need to load the data
-data = read_csv("data/air_sample.csv")
+# data = read_csv("data/air_sample.csv")
+data = read_csv(file.path(DATA_PATH,"air_sample.csv")) 
 
 # I always like to look at a sample of my data to see what I'm dealing with
 data[1:10, ]
@@ -28,6 +75,36 @@ data = left_join(data, rename(carriers, TicketingCarrierName = "Description"), b
 
 # Now, we can see what the most popular air route is, by summing up the number of
 # passengers carried.
+
+busiest_routes <- function(dataframe, origcol, destcol){
+
+  stopifnot(all(dataframe$Passengers >1))
+  stopifnot(!any(is.na(dataframe$Passengers)))
+
+  pairs = dataframe |>
+    group_by({{ origcol }}, {{ destcol }}) |>
+    summarize(Passengers = sum(Passengers), distance_km = first(Distance) * MILES_TO_KILOMETERS)
+  arrange(pairs, -Passengers)
+
+  # we see that LAX-JFK (Los Angeles to New York Kennedy) is represented separately
+  # from JFK-LAX. We'd like to combine these two. Create airport1 and airport2 fields
+  # with the first and second airport in alphabetical order.
+  pairs = pairs |>
+    mutate(
+      airport1 = if_else({{ origcol }} < {{ destcol }}, {{ origcol }}, {{ destcol }}),
+      airport2 = if_else({{ origcol }} < {{ destcol }}, {{ destcol }}, {{ origcol }})
+    ) |>
+    group_by(airport1, airport2) |>
+    summarize(Passengers = sum(Passengers), distance_km = first(distance_km)) |>
+    ungroup()
+
+  arrange(pairs, -Passengers)
+  
+} 
+
+busiest_routes(data, Origin, Dest)
+busiest_routes(data, OriginCity, DestCity)
+
 pairs = data |>
   group_by(Origin, Dest) |>
   summarize(Passengers = sum(Passengers), distance_km = first(Distance) * 1.609)
