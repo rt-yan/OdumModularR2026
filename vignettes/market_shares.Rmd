@@ -1,0 +1,30 @@
+---
+title: "market_shares"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{market_shares}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(OdumModularDesignR)
+```
+
+This is a page to demonstrate how this package is used.  
+First, load data.
+
+
+```{r}
+file = system.file("testdata/passengers.csv", package = "OdumModularDesignR")
+data = read.csv(file)
+```
+
+Then we can calculate busiest routes...

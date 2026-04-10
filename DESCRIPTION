@@ -14,5 +14,9 @@ Imports:
     dplyr,
     readr
 Suggests: 
-    testthat (>= 3.0.0)
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0) tibble)
 Config/testthat/edition: 3
+URL: https://rt-yan.github.io/OdumModularR2026/
+VignetteBuilder: knitr
